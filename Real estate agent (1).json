@@ -1,0 +1,219 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        80
+      ],
+      "id": "f837eea3-a3bc-4144-8fe2-e8754df84e1f",
+      "name": "When clicking 'Execute workflow'"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1OQdaMCoGtdK54QkrcIT1jubVuZkbwikoSXKMH2NWGmM",
+          "mode": "list",
+          "cachedResultName": "Coustomer payment  detail",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OQdaMCoGtdK54QkrcIT1jubVuZkbwikoSXKMH2NWGmM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OQdaMCoGtdK54QkrcIT1jubVuZkbwikoSXKMH2NWGmM/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "fc5d2cb6-6184-445f-9206-bee990614f49",
+      "name": "Customer Payment Detail",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -656,
+        80
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Il9ca5oiEOLJO8ZF",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Customer Email'] }}",
+        "subject": "Payment Reminder - Action Required",
+        "message": "=Dear{{ $json['Customer Name'] }} this message was to warn you that your payment status is unpaid so we warn you to pay you charges as soon as possible",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "af6da54e-5b30-476e-8d1d-2d0ead3dd6c6",
+      "name": "Email to unpaid",
+      "webhookId": "1f1a46a7-a438-4d50-a5db-2fe2cca1d0f2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RFjlarAA4jdugzR2",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Customer Email'] }}",
+        "subject": "Payment Overdue - Please Contact Us",
+        "message": "=Dear{{ $json['Customer Name'] }} this message was to warn you that your payment status is overdue so we want to tell you that your due date to pay your charges is ended so plz contact the administration",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        16,
+        224
+      ],
+      "id": "10493914-90b4-4bfa-a44a-e829d2bc5d09",
+      "name": "Email to Overdue",
+      "webhookId": "9abc41b9-0eea-4af6-a3a0-de8fc579e370",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RFjlarAA4jdugzR2",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1a848222-919f-4fd5-87c2-1498392a4078",
+              "leftValue": "={{ $json['Payment Status'] }}",
+              "rightValue": "Unpaid",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        80
+      ],
+      "id": "d66c6736-3e99-4571-afeb-331b132be76b",
+      "name": "Only unpaid and overdue"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json['Payment Status'] }}",
+              "rightValue": "Paid",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f6d5bb1b-de7e-447d-89f2-d8a946f8e379",
+      "name": "Filter Unpaid overdue Customers",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        80
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Execute workflow'": {
+      "main": [
+        [
+          {
+            "node": "Customer Payment Detail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer Payment Detail": {
+      "main": [
+        [
+          {
+            "node": "Filter Unpaid overdue Customers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only unpaid and overdue": {
+      "main": [
+        [
+          {
+            "node": "Email to unpaid",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email to Overdue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Unpaid overdue Customers": {
+      "main": [
+        [
+          {
+            "node": "Only unpaid and overdue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "dfdc12b1171f6cdf466e48a260c970e22c34136bf19bdc408b9b41b7eed1ab95"
+  }
+}
